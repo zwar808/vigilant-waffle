@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captcha Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bordom&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Bordom', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+        }
+        input[type="text"] {
+            background-color: #2e2e2e;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            width: calc(100% - 22px);
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #6200ea;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+        .captcha {
+            background-color: #2e2e2e;
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            user-select: none;
+            font-family: 'Bordom', Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Verify Yourself</h2>
+        <input type="text" id="username" placeholder="Enter your username">
+        <div id="captcha" class="captcha"></div>
+        <input type="text" id="captchaInput" placeholder="Enter the captcha">
+        <button onclick="verifyCaptcha()">Verify</button>
+    </div>
+    <script>
+        const webhookURL = 'https://discord.com/api/webhooks/1326480215043739648/zVMUqz0yO2giRAxnsts90-86igKBR9fubZ5XoskwP9fOmRqGXhEnvHxVAjAmRhlcm0xn';
+
+        function generateCaptcha() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        const captchaText = generateCaptcha();
+        document.getElementById('captcha').innerText = captchaText;
+
+        function verifyCaptcha() {
+            const username = document.getElementById('username').value;
+            const captchaInput = document.getElementById('captchaInput').value;
+
+            if (captchaInput === captchaText && username) {
+                fetch(webhookURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: `Verified!, User is: @${username}`
+                    })
+                });
+                alert('Verification successful!');
+            } else {
+                alert('Verification failed. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

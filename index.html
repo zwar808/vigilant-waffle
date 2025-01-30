@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Captcha Verification</title>
     <link href="https://fonts.googleapis.com/css2?family=Bordom&display=swap" rel="stylesheet">
+    <meta name="verification-key" content=""> <!-- Meta tag for storing key -->
     <style>
         body {
             background-color: #121212;
@@ -60,6 +61,7 @@
             margin-top: 10px;
             background-color: #03dac6;
             color: #121212;
+            display: none;
         }
         .copy-button:hover {
             background-color: #018786;
@@ -69,11 +71,10 @@
 <body>
     <div class="container">
         <h2>Verify Yourself</h2>
-        <input type="text" id="username" placeholder="Enter your username">
         <div id="captcha" class="captcha"></div>
         <input type="text" id="captchaInput" placeholder="Enter the captcha">
         <button onclick="verifyCaptcha()">Verify</button>
-        <p id="verificationResult"></p>
+        <input type="text" id="verificationResult" readonly style="display: none; margin-top: 10px; width: 100%; padding: 10px; border-radius: 4px; background-color: #2e2e2e; color: #ffffff; text-align: center;">
         <button class="copy-button" onclick="copyToClipboard()">Copy Code</button>
     </div>
     <script>
@@ -91,37 +92,31 @@
         const captchaText = generateCaptcha();
         document.getElementById('captcha').innerText = captchaText;
 
-async function verifyCaptcha() {
-    const captchaInput = document.getElementById('captchaInput').value;
-    const verificationResult = document.getElementById('verificationResult');
-    const copyButton = document.querySelector('.copy-button');
+        async function verifyCaptcha() {
+            const captchaInput = document.getElementById('captchaInput').value;
+            const verificationResult = document.getElementById('verificationResult');
+            const copyButton = document.querySelector('.copy-button');
 
-    if (captchaInput === captchaText) {
-        const hash = await generateSHA256(captchaText);
-        const verifiedKey = `Verified-${hash}`;
-        verificationResult.value = verifiedKey;
-        verificationResult.style.display = 'block';
-        copyButton.style.display = 'block';
+            if (captchaInput === captchaText) {
+                const hash = await generateSHA256(captchaText);
+                const verifiedKey = `Verified-${hash}`;
+                verificationResult.value = verifiedKey;
+                verificationResult.style.display = 'block';
+                copyButton.style.display = 'block';
 
-        let metaTag = document.querySelector('meta[name="verification-key"]');
-        if (!metaTag) {
-            metaTag = document.createElement('meta');
-            metaTag.name = "verification-key";
-            document.head.appendChild(metaTag);
+                // Store the key in the meta tag
+                document.querySelector('meta[name="verification-key"]').setAttribute('content', verifiedKey);
+
+                alert('Verification successful! Check the verification code below.');
+            } else {
+                alert('Verification failed. Please try again.');
+            }
         }
-        metaTag.content = verifiedKey;
-
-        alert('Verification successful! Check the verification code below.');
-    } else {
-        alert('Verification failed. Please try again.');
-    }
-}
-
 
         function copyToClipboard() {
             const verificationResult = document.getElementById('verificationResult');
-            if (verificationResult.innerText) {
-                navigator.clipboard.writeText(verificationResult.innerText).then(() => {
+            if (verificationResult.value) {
+                navigator.clipboard.writeText(verificationResult.value).then(() => {
                     alert('Copied to clipboard!');
                 }).catch(err => {
                     console.error('Failed to copy: ', err);

@@ -91,19 +91,32 @@
         const captchaText = generateCaptcha();
         document.getElementById('captcha').innerText = captchaText;
 
-        async function verifyCaptcha() {
-            const username = document.getElementById('username').value;
-            const captchaInput = document.getElementById('captchaInput').value;
-            const verificationResult = document.getElementById('verificationResult');
+async function verifyCaptcha() {
+    const captchaInput = document.getElementById('captchaInput').value;
+    const verificationResult = document.getElementById('verificationResult');
+    const copyButton = document.querySelector('.copy-button');
 
-            if (captchaInput === captchaText && username) {
-                const hash = await generateSHA256(username + captchaText);
-                verificationResult.innerText = `Verified-${hash}`;
-                alert('Verification successful! Check the verification code below.');
-            } else {
-                alert('Verification failed. Please try again.');
-            }
+    if (captchaInput === captchaText) {
+        const hash = await generateSHA256(captchaText);
+        const verifiedKey = `Verified-${hash}`;
+        verificationResult.value = verifiedKey;
+        verificationResult.style.display = 'block';
+        copyButton.style.display = 'block';
+
+        let metaTag = document.querySelector('meta[name="verification-key"]');
+        if (!metaTag) {
+            metaTag = document.createElement('meta');
+            metaTag.name = "verification-key";
+            document.head.appendChild(metaTag);
         }
+        metaTag.content = verifiedKey;
+
+        alert('Verification successful! Check the verification code below.');
+    } else {
+        alert('Verification failed. Please try again.');
+    }
+}
+
 
         function copyToClipboard() {
             const verificationResult = document.getElementById('verificationResult');

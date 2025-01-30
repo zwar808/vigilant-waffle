@@ -56,6 +56,14 @@
             user-select: none;
             font-family: 'Bordom', Arial, sans-serif;
         }
+        .copy-button {
+            margin-top: 10px;
+            background-color: #03dac6;
+            color: #121212;
+        }
+        .copy-button:hover {
+            background-color: #018786;
+        }
     </style>
 </head>
 <body>
@@ -65,34 +73,48 @@
         <div id="captcha" class="captcha"></div>
         <input type="text" id="captchaInput" placeholder="Enter the captcha">
         <button onclick="verifyCaptcha()">Verify</button>
+        <p id="verificationResult"></p>
+        <button class="copy-button" onclick="copyToClipboard()">Copy Code</button>
     </div>
     <script>
-        const webhookURL = 'https://discord.com/api/webhooks/1326480215043739648/zVMUqz0yO2giRAxnsts90-86igKBR9fubZ5XoskwP9fOmRqGXhEnvHxVAjAmRhlcm0xn';
-
         function generateCaptcha() {
             return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function generateSHA256(text) {
+            const encoder = new TextEncoder();
+            return crypto.subtle.digest('SHA-256', encoder.encode(text)).then(buffer => {
+                return Array.from(new Uint8Array(buffer)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+            });
         }
 
         const captchaText = generateCaptcha();
         document.getElementById('captcha').innerText = captchaText;
 
-        function verifyCaptcha() {
+        async function verifyCaptcha() {
             const username = document.getElementById('username').value;
             const captchaInput = document.getElementById('captchaInput').value;
+            const verificationResult = document.getElementById('verificationResult');
 
             if (captchaInput === captchaText && username) {
-                fetch(webhookURL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        content: `Verified!, User is: @${username}`
-                    })
-                });
-                alert('Verification successful!');
+                const hash = await generateSHA256(username + captchaText);
+                verificationResult.innerText = `Verified-${hash}`;
+                alert('Verification successful! Check the verification code below.');
             } else {
                 alert('Verification failed. Please try again.');
+            }
+        }
+
+        function copyToClipboard() {
+            const verificationResult = document.getElementById('verificationResult');
+            if (verificationResult.innerText) {
+                navigator.clipboard.writeText(verificationResult.innerText).then(() => {
+                    alert('Copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            } else {
+                alert('No verification code to copy.');
             }
         }
     </script>

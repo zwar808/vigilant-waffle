@@ -78,6 +78,11 @@
         <button class="copy-button" onclick="copyToClipboard()">Copy Code</button>
     </div>
     <script>
+        function getHWIDFromURL() {
+            const urlParams = new URLSearchParams(window.location.hash.substring(1));
+            return urlParams.get('hwid');
+        }
+
         function generateCaptcha() {
             return Math.random().toString(36).substring(2, 8).toUpperCase();
         }
@@ -96,6 +101,7 @@
             const captchaInput = document.getElementById('captchaInput').value;
             const verificationResult = document.getElementById('verificationResult');
             const copyButton = document.querySelector('.copy-button');
+            const hwid = getHWIDFromURL();
 
             if (captchaInput === captchaText) {
                 const hash = await generateSHA256(captchaText);
@@ -103,10 +109,15 @@
                 verificationResult.value = verifiedKey;
                 verificationResult.style.display = 'block';
                 copyButton.style.display = 'block';
-
+                
                 // Store the key in the meta tag
                 document.querySelector('meta[name="verification-key"]').setAttribute('content', verifiedKey);
-
+                
+                // Store key in localStorage based on HWID
+                if (hwid) {
+                    localStorage.setItem(`key_${hwid}`, verifiedKey);
+                }
+                
                 alert('Verification successful! Check the verification code below.');
             } else {
                 alert('Verification failed. Please try again.');
@@ -125,6 +136,16 @@
                 alert('No verification code to copy.');
             }
         }
+
+        function checkHWIDKey() {
+            const hwid = getHWIDFromURL();
+            if (hwid) {
+                const storedKey = localStorage.getItem(`key_${hwid}`);
+                console.log(storedKey ? storedKey : "false");
+            }
+        }
+
+        checkHWIDKey();
     </script>
 </body>
 </html>
